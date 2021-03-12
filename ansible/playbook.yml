@@ -1,0 +1,11 @@
+---
+- name: Setup required libraries
+  hosts: all
+  gather_facts: no
+  become: yes
+  become_method: sudo
+
+
+  tasks:
+  - include_role:
+      name: ec2-role

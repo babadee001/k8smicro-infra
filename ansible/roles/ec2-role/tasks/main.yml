@@ -1,0 +1,104 @@
+# - name: Install aptitude using apt
+#   apt:
+#     name: aptitude
+#     state: latest
+#     update_cache: yes 
+#     force_apt_get: yes
+
+# - name: Install required system packages
+#   apt:
+#     name: "{{ item }}"
+#     state: latest
+#     update_cache: yes
+#   loop:
+#     - apt-transport-https
+#     - ca-certificates
+#     - curl
+#     - software-properties-common
+#     - python3-pip
+#     - virtualenv
+#     - python3-setuptools
+
+- name: Update APT package manager repositories cache
+  apt:
+    update_cache: yes
+
+- name: Add Docker apt Key
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+
+- name: Add Docker Repository
+  apt_repository:
+    repo: deb https://download.docker.com/linux/ubuntu bionic stable
+    state: present
+
+- name: Update apt and install docker-ce  docker-compose
+  apt:
+    update_cache: yes
+    name: "{{ item }}"
+    state: latest
+  loop:
+    - docker-ce
+    - docker-compose
+
+
+- name: Add user to docker group
+  user:
+    name: ubuntu
+    group: docker
+    append: yes
+
+
+# - name: install wget
+#   apt:
+#     name: wget
+#     state: present
+
+
+- name: Update APT package manager repositories cache
+  apt:
+    update_cache: yes
+
+- name: install openjdk for jenkins
+  apt:
+    name: openjdk-8-jdk
+    state: present
+
+- name: ensure jenkins apt repository key
+  apt_key: 
+    url: https://pkg.jenkins.io/debian-stable/jenkins.io.key
+    state: present
+
+- name: connfigure repo
+  apt_repository:
+    repo: 'deb https://pkg.jenkins.io/debian-stable binary/'
+    state: present
+
+
+- name: install jenkins
+  apt:
+    name: jenkins
+    update_cache: yes
+
+- name: start jenkins
+  service: 
+    name: jenkins
+    state: started
+
+- name: get jenkins password
+  shell: cat /var/lib/jenkins/secrets/initialAdminPassword
+  changed_when: false
+  register: result
+  ignore_errors: yes
+
+
+- name: access in stdout
+  debug:
+    var: result.stdout
+
+- name: Add jenkins user to docker group
+  user:
+    name: jenkins
+    group: docker
+    append: yes
